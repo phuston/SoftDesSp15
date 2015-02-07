@@ -7,7 +7,7 @@ Created on Sun Feb  2 11:24:42 2014
 """
 
 # you may find it useful to import these variables (although you are not required to use them)
-from amino_acids import aa, codons, aa_table
+from amino_acids_less_structure import aa_dict
 import random
 from load import load_seq
 
@@ -28,7 +28,7 @@ def get_complement(nucleotide):
     >>> get_complement('C')
     'G'
     """
-    complements = {'A':'T', 'T':'A', 'C':'G', 'G':'C'}
+    complements = {'A':'T', 'T':'A', 'C':'G', 'G':'C'} #Creates dictionary for nucleotide pairs
     return complements[nucleotide]
 
 
@@ -46,9 +46,7 @@ def get_reverse_complement(dna):
     complement = ""
     for char in dna:
         complement += get_complement(char)
-    return (complement)[::-1]
-
-# print get_reverse_complement('AAAGCGGGCAT')
+    return (complement)[::-1] #Uses power of slice functionality with step size of -1 to reverse the complement
 
 
 def rest_of_ORF(dna):
@@ -62,6 +60,8 @@ def rest_of_ORF(dna):
     'ATG'
     >>> rest_of_ORF("ATGAGATAGG")
     'ATGAGA'
+    >>> rest_of_ORF("ATGAGACGACAGATATAG")
+    'ATGAGACGACAGATA'
     """
     stop_codons = ["TAG","TAA","TGA"]
     output = ""
@@ -85,8 +85,6 @@ def find_all_ORFs_oneframe(dna):
     ['ATGCATGAATGTAGA', 'ATGTGCCC']
     """
 
-    # orfs = [rest_of_ORF(dna)]
-    # dna = dna[len(orfs[0]):]
     orfs = []
     while(len(dna) >= 3):
         while(dna[:3] != 'ATG' and len(dna) >= 3):
@@ -146,7 +144,8 @@ def longest_ORF_noncoding(dna, num_trials):
         
         dna: a DNA sequence
         num_trials: the number of random shuffles
-        returns: the maximum length longest ORF """
+        returns: the maximum length longest ORF 
+        """
     long_ORF = ""
     for i in range(num_trials):
     	dna_shuffle = shuffle_string(dna)
@@ -168,8 +167,11 @@ def coding_strand_to_AA(dna):
         >>> coding_strand_to_AA("ATGCCCGCTTT")
         'MPA'
     """
-    # TODO: implement this
-    pass
+    translated = ''
+    for i in range(0,len(dna),3):
+        if(len(dna[i:i+3]) == 3):
+            translated += aa_dict[dna[i:i+3]]
+    return translated
 
 def gene_finder(dna):
     """ Returns the amino acid sequences that are likely coded by the specified dna
@@ -177,9 +179,19 @@ def gene_finder(dna):
         dna: a DNA sequence
         returns: a list of all amino acid sequences coded by the sequence dna.
     """
-    # TODO: implement this
-    pass
+    max_len = len(longest_ORF_noncoding(dna, 1500))
+    print max_len
+    return sorted([coding_strand_to_AA(orf) for orf in find_all_ORFs_both_strands(dna) if len(orf) >= max_len], key=len, reverse=True)
+
 
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+    # print "Here is the longest non-coding ORF: " + longest_ORF_noncoding(load_seq("./data/X73525.fa"),1500)
+
+    # all_orfs = find_all_ORFs_both_strands(load_seq("./data/X73525.fa"))
+    # print all_orfs
+    result = gene_finder(load_seq("./data/X73525.fa"))
+    print "Here is the result:" 
+    for x in result:
+        print x
