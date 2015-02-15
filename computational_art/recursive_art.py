@@ -23,7 +23,7 @@ def build_random_function(min_depth, max_depth):
     depth = random.randint(min_depth,max_depth)
 
     if depth <= 1:
-        return [random.choice(['x','y'])]
+        return [random.choice(['x','y','t'])]
     elif oper == 'prod':
         return ['prod', build_random_function(min_depth-1,max_depth-1), build_random_function(min_depth-1,max_depth-1)]
     elif oper == 'avg':
@@ -38,7 +38,7 @@ def build_random_function(min_depth, max_depth):
         return ['tan', build_random_function(min_depth-1,max_depth-1)]
 
 
-def evaluate_random_function(f, x, y):
+def evaluate_random_function(f, x, y, t):
     """ Evaluate the random function f with inputs x,y
         Representation of the function f is defined in the assignment writeup
 
@@ -47,27 +47,29 @@ def evaluate_random_function(f, x, y):
         y: the value of y to be used to evaluate the function
         returns: the function value
 
-        >>> evaluate_random_function(["x"],-0.5, 0.75)
+        >>> evaluate_random_function(["x"],-0.5,0.75,0)
         -0.5
-        >>> evaluate_random_function(["y"],0.1,0.02)
+        >>> evaluate_random_function(["y"],0.1,0.02,0)
         0.02
     """
     if f[0] == 'x':
         return x
     if f[0] == 'y':
         return y
+    if f[0] == 't':
+        return t
     if f[0] == 'prod':
-        return evaluate_random_function(f[1:][0],x,y)*evaluate_random_function(f[1:][1],x,y)
+        return evaluate_random_function(f[1],x,y,t)*evaluate_random_function(f[2],x,y,t)
     if f[0] == 'avg':
-        return (evaluate_random_function(f[1:][0],x,y)+evaluate_random_function(f[1:][1],x,y))/2.0
+        return (evaluate_random_function(f[1],x,y,t)+evaluate_random_function(f[2],x,y,t))/2.0
     if f[0] == 'cos_pi':
-        return math.cos(math.pi*evaluate_random_function(f[1:][0],x,y))
+        return math.cos(math.pi*evaluate_random_function(f[1],x,y,t))
     if f[0] == 'sin_pi':
-        return math.sin(math.pi*evaluate_random_function(f[1:][0],x,y))
+        return math.sin(math.pi*evaluate_random_function(f[1],x,y,t))
     if f[0] == 'sin':
-        return math.sin(evaluate_random_function(f[1:][0],x,y))
+        return math.sin(evaluate_random_function(f[1],x,y,t))
     if f[0] == 'tan':
-        return math.tan(evaluate_random_function(f[1:][0],x,y))
+        return math.tan(evaluate_random_function(f[1],x,y,t))
 
 
 def remap_interval(val, input_interval_start, input_interval_end, output_interval_start, output_interval_end):
@@ -138,44 +140,39 @@ def test_image(filename, x_size=350, y_size=350):
     im.save(filename)
 
 
-def generate_art(filename,  complexity, x_size=200, y_size=200):
+def generate_art(complexity=7, num_frames=1, x_size=100, y_size=100):
     """ Generate computational art and save as an image file.
 
         filename: string filename for image (should be .png)
         x_size, y_size: optional args to set image dimensions (default: 350)
     """
     # Functions for red, green, and blue channels - where the magic happens!
+
     red_function = build_random_function(complexity, complexity+3)
     green_function = build_random_function(complexity, complexity+3)
     blue_function = build_random_function(complexity, complexity+3)
 
+
     # Create image and loop over all pixels
-    im = Image.new("RGB", (x_size, y_size))
-    pixels = im.load()
-    for i in range(x_size):
-        for j in range(y_size):
-            x = remap_interval(i, 0, x_size, -1, 1)
-            y = remap_interval(j, 0, y_size, -1, 1)
-            pixels[i, j] = (
-                    color_map(evaluate_random_function(red_function, x, y)),
-                    color_map(evaluate_random_function(green_function, x, y)),
-                    color_map(evaluate_random_function(blue_function, x, y))
-                    )
+    for t in range(0, num_frames+1):
+        t_val = (t-(num_frames/2.0))/(num_frames/2.0)
 
-    im.save(filename)
+        im = Image.new("RGB", (x_size, y_size))
+        pixels = im.load()
+        for i in range(x_size):
+            for j in range(y_size):
+                x = remap_interval(i, 0, x_size, -1, 1)
+                y = remap_interval(j, 0, y_size, -1, 1)
+                pixels[i, j] = (
+                        color_map(evaluate_random_function(red_function, x, y, t_val)),
+                        color_map(evaluate_random_function(green_function, x, y, t_val)),
+                        color_map(evaluate_random_function(blue_function, x, y, t_val))
+                        )
 
-
-def generate_many_arts(num_of_arts, complexity):
-    for i in range(num_of_arts, complexity):
-        print 'Generating art piece %d... Be patient.' % i
-        generate_art('art%d.png' % i)
-
+        im.save('frame%d.png' % t)
 
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
-    num_to_gen = input("How many arts do you want? ")
-    complexity = input("What should the complexity be?")
-
-    generate_many_arts(num_to_gen, complexity)
+    generate_art(7, 20)
