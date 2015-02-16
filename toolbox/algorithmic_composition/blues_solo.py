@@ -29,8 +29,19 @@ solo = AudioStream(sampling_rate, 1)
 """ these are the piano key numbers for a 3 octave blues scale in A
 	See: http://en.wikipedia.org/wiki/Blues_scale """
 blues_scale = [25, 28, 30, 31, 32, 35, 37, 40, 42, 43, 44, 47, 49, 52, 54, 55, 56, 59, 61]
+phrigian_scale = [25, 26, 28, 30, 32, 33, 35, 37, 38, 42, 44, 45, 47, 49, 50, 52, 54, 56, 57]
 beats_per_minute = 45				# Let's make a slow blues solo
 
-add_note(solo, bass, blues_scale[0], 1.0, beats_per_minute, 1.0)
+curr_note = 0
+add_note(solo, bass, blues_scale[curr_note], 1.0, beats_per_minute, 1.0)
+
+
+
+licks = [ [ [1, 0.5*1.1], [1, 0.5*0.9], [1, 0.5*1.1], [1, 0.5*0.9] ], [ [-1, 0.5*1.1], [-1, 0.5*0.9], [-1, 0.5*1.1], [-1, 0.5*0.9] ], [ [3, 0.5*1.1], [-1, 0.5*0.9], [1, 0.5*1.1], [-1, 0.5*0.9] ] ]
+for i in range(8):
+    lick = choice(licks)
+    for note in lick:
+        curr_note = (curr_note+note[0])%len(blues_scale)
+        add_note(solo, bass, blues_scale[curr_note], note[1], beats_per_minute, 1.0)
 
 solo >> "blues_solo.wav"

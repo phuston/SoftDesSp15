@@ -17,7 +17,7 @@ def build_random_function(min_depth, max_depth):
                  these functions)
     """
 
-    opers = ['prod','avg','cos_pi','sin_pi','sin','tan']
+    opers = ['prod','avg','cos_pi','sin_pi','square','cube']
     oper = random.choice(opers)
 
     depth = random.randint(min_depth,max_depth)
@@ -32,10 +32,10 @@ def build_random_function(min_depth, max_depth):
         return ['cos_pi', build_random_function(min_depth-1,max_depth-1)]
     elif oper == 'sin_pi':
         return ['sin_pi', build_random_function(min_depth-1,max_depth-1)]
-    elif oper == 'sin':
-        return ['sin', build_random_function(min_depth-1,max_depth-1)]
-    elif oper == 'tan':
-        return ['tan', build_random_function(min_depth-1,max_depth-1)]
+    elif oper == 'square':
+        return ['sinsqr', build_random_function(min_depth-1,max_depth-1)]
+    elif oper == 'cube':
+        return ['cube', build_random_function(min_depth-1,max_depth-1)]
 
 
 def evaluate_random_function(f, x, y, t):
@@ -66,10 +66,10 @@ def evaluate_random_function(f, x, y, t):
         return math.cos(math.pi*evaluate_random_function(f[1],x,y,t))
     if f[0] == 'sin_pi':
         return math.sin(math.pi*evaluate_random_function(f[1],x,y,t))
-    if f[0] == 'sin':
-        return math.sin(evaluate_random_function(f[1],x,y,t))
-    if f[0] == 'tan':
-        return math.tan(evaluate_random_function(f[1],x,y,t))
+    if f[0] == 'sinsqr':
+        return (math.sin(evaluate_random_function(f[1],x,y,t)))**2
+    if f[0] == 'cube':
+        return (evaluate_random_function(f[1],x,y,t))**3
 
 
 def remap_interval(val, input_interval_start, input_interval_end, output_interval_start, output_interval_end):
@@ -140,7 +140,7 @@ def test_image(filename, x_size=350, y_size=350):
     im.save(filename)
 
 
-def generate_art(complexity=7, num_frames=1, x_size=100, y_size=100):
+def generate_art(complexity=7, num_frames=1, x_size=350, y_size=350):
     """ Generate computational art and save as an image file.
 
         filename: string filename for image (should be .png)
@@ -155,6 +155,7 @@ def generate_art(complexity=7, num_frames=1, x_size=100, y_size=100):
 
     # Create image and loop over all pixels
     for t in range(0, num_frames+1):
+        print "Generating frame %d ... Please be patient." % t
         t_val = (t-(num_frames/2.0))/(num_frames/2.0)
 
         im = Image.new("RGB", (x_size, y_size))
@@ -175,4 +176,6 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
-    generate_art(7, 20)
+    complexity = input("Of what complexity do you desire your art to be? ")
+    num_frames = input("How many frames do you desire? ")
+    generate_art(complexity, num_frames)
