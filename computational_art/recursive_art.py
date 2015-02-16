@@ -179,3 +179,6 @@ if __name__ == '__main__':
     complexity = input("Of what complexity do you desire your art to be? ")
     num_frames = input("How many frames do you desire? ")
     generate_art(complexity, num_frames)
+
+    # Command to create movie from png in terminal:a
+    # avconv -i "frame%d.png" -r 25 -c:v libx264 -crf 20  -pix_fmt yuv420p img.mov
