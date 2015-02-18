@@ -3,6 +3,10 @@
 import random
 import math
 from PIL import Image
+import alsaaudio
+import audioop
+import time
+import pygame
 
 
 def bld_func(min_d, max_d):
@@ -120,27 +124,7 @@ def c_map(val):
     return int(remap(val, -1, 1, 0, 255))
 
 
-def test_image(filename, x_size=350, y_size=350):
-    """ Generate test image with random pixels and save as an image file.
-
-        filename: string filename for image (should be .png)
-        x_size, y_size: optional args to set image dimensions (default: 350)
-    """
-    # Create image and loop over all pixels
-    im = Image.new("RGB", (x_size, y_size))
-    pixels = im.load()
-    for i in range(x_size):
-        for j in range(y_size):
-            x = remap(i, 0, x_size, -1, 1)
-            y = remap(j, 0, y_size, -1, 1)
-            pixels[i, j] = (random.randint(0, 255),  # Red channel
-                            random.randint(0, 255),  # Green channel
-                            random.randint(0, 255))  # Blue channel
-
-    im.save(filename)
-
-
-def gen_art(complexity=7, num_frames=1, x_size=350, y_size=350):
+def gen_art(num_frames=50, max_volume=40000, complexity=7, x_size=350, y_size=350):
     """ Generate computational art and save as an image file.
 
         filename: string filename for image (should be .png)
@@ -154,9 +138,9 @@ def gen_art(complexity=7, num_frames=1, x_size=350, y_size=350):
 
 
     # Create image and loop over all pixels
-    for t in range(0, num_frames+1):
+    for t in range(0, max_volume, max_volume/num_frames):
         print "Generating frame %d ... Please be patient." % t
-        t_val = (t-(num_frames/2.0))/(num_frames/2.0)
+        t_val = remap(t, 0, max_volume, -1.0, 1.0)
 
         im = Image.new("RGB", (x_size, y_size))
         pixels = im.load()
@@ -172,13 +156,45 @@ def gen_art(complexity=7, num_frames=1, x_size=350, y_size=350):
 
         im.save('frame%d.png' % t)
 
+def roundint(val, max_volume, num_frames):
+    return int((max_volume/num_frames) * round(float(val)/(max_volume/num_frames)))
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
-    complexity = input("Of what complexity do you desire your art to be? ")
-    num_frames = input("How many frames do you desire? ")
-    gen_art(complexity, num_frames)
+    num_frames = 100
+    max_volume = 30000
 
-    # Command to create movie from png in terminal:a
-    # avconv -i "frame%d.png" -r 25 -c:v libx264 -crf 20  -pix_fmt yuv420p img.mov
+    bool_gen_art = raw_input("Do you need to generate new frames? Y or N: ")
+    if bool_gen_art.upper() == "Y":
+        gen_art(num_frames, max_volume)
+
+    pygame.init()
+    w = 800
+    h = 532
+    size = (w,h)
+    screen = pygame.display.set_mode(size)
+    img = pygame.image.load('frame-0.jpg')
+    screen.blit(img,(0,0))
+    time.sleep(1)
+    pygame.display.flip()
+
+    inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,0)
+    inp.setchannels(1)
+    inp.setrate(16000)
+    inp.setformat(alsaaudio.PCM_FORMAT_S16_LE)
+    inp.setperiodsize(160)
+            
+    while True:
+        l,data = inp.read()
+        if l:
+            # print roundint(audioop.rms(data,2), max_volume, num_frames)/(max_volume/num_frames)
+            # print 'frame%d.png' % ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames))
+            img = pygame.image.load('frame-%d.jpg' % ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames)))
+            screen.blit(img,(0,0))
+            pygame.display.flip()
+
+
+
