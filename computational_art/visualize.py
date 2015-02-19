@@ -165,35 +165,45 @@ if __name__ == '__main__':
     doctest.testmod()
 
     num_frames = 100
-    max_volume = 30000
+    max_volume = 25000
 
     bool_gen_art = raw_input("Do you need to generate new frames? Y or N: ")
     if bool_gen_art.upper() == "Y":
         gen_art(num_frames, max_volume)
+
+    
+
 
     pygame.init()
     w = 800
     h = 532
     size = (w,h)
     screen = pygame.display.set_mode(size)
-    img = pygame.image.load('frame-0.jpg')
-    screen.blit(img,(0,0))
-    time.sleep(1)
-    pygame.display.flip()
+
+    imgs = [pygame.image.load('frame-%d.jpg' % i) for i in range(num_frames)]
+    # imgs = [pygame.transform.scale(img,(1440,1080)) for img in imgs]
+
+    for img in imgs:
+        screen.blit(img,(0,0))
+        pygame.display.flip()
+
 
     inp = alsaaudio.PCM(alsaaudio.PCM_CAPTURE,0)
     inp.setchannels(1)
     inp.setrate(16000)
     inp.setformat(alsaaudio.PCM_FORMAT_S16_LE)
     inp.setperiodsize(160)
+    time.sleep(1)
             
     while True:
         l,data = inp.read()
         if l:
             # print roundint(audioop.rms(data,2), max_volume, num_frames)/(max_volume/num_frames)
             # print 'frame%d.png' % ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames))
-            img = pygame.image.load('frame-%d.jpg' % ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames)))
-            screen.blit(img,(0,0))
+            index = ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames))
+            if index > num_frames-1:
+                index = num_frames-1
+            screen.blit(imgs[index],(0,0))
             pygame.display.flip()
 
 

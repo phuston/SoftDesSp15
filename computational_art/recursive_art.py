@@ -148,9 +148,9 @@ def gen_art(complexity=7, num_frames=1, x_size=350, y_size=350):
     """
     # Functions for red, green, and blue channels - where the magic happens!
 
-    red_function = bld_func(complexity, complexity+3)
-    green_function = bld_func(complexity, complexity+3)
-    blue_function = bld_func(complexity, complexity+3)
+    red_function = bld_func(complexity, complexity+2)
+    green_function = bld_func(complexity, complexity+2)
+    blue_function = bld_func(complexity, complexity+2)
 
 
     # Create image and loop over all pixels
@@ -176,9 +176,9 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
-    complexity = input("Of what complexity do you desire your art to be? ")
-    num_frames = input("How many frames do you desire? ")
-    gen_art(complexity, num_frames)
+    # complexity = input("Of what complexity do you desire your art to be? ")
+    # num_frames = input("How many frames do you desire? ")
+    gen_art(7, 1)
 
     # Command to create movie from png in terminal:a
     # avconv -i "frame%d.png" -r 25 -c:v libx264 -crf 20  -pix_fmt yuv420p img.mov
