@@ -6,7 +6,7 @@ from PIL import Image
 import alsaaudio
 import audioop
 import time
-import pygame
+import pyglet
 
 
 def bld_func(min_d, max_d):
@@ -165,20 +165,16 @@ if __name__ == '__main__':
     doctest.testmod()
 
     num_frames = 100
-    max_volume = 15000
+    max_volume = 25000
 
     bool_gen_art = raw_input("Do you need to generate new frames? Y or N: ")
     if bool_gen_art.upper() == "Y":
         gen_art(num_frames, max_volume)
 
 
-    pygame.init()
-    w = 800   
-    h = 537
-    size = (w,h)
-    screen = pygame.display.set_mode(size)
+    window = pyglet.window.Window()
 
-    imgs = [pygame.image.load('frame-%d.jpg' % i) for i in range(num_frames)]
+    imgs = [pyglet.resource.image('frame-%d.jpg' % i) for i in range(num_frames)]
     # imgs = [pygame.transform.scale(img,(1440,1080)) for img in imgs]
 
     for img in imgs:
@@ -203,6 +199,3 @@ if __name__ == '__main__':
                 index = num_frames-1
             screen.blit(imgs[index],(0,0))
             pygame.display.flip()
-
-
-
