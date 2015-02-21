@@ -130,7 +130,7 @@ def gen_art(num_frames=50, max_volume=40000, complexity=7, x_size=350, y_size=35
         filename: string filename for image (should be .png)
         x_size, y_size: optional args to set image dimensions (default: 350)
     """
-    # Functions for red, green, and blue channels - where the magic happens!
+    # Functions for red, green, and blue channels
 
     red_function = bld_func(complexity, complexity+3)
     green_function = bld_func(complexity, complexity+3)
@@ -157,6 +157,10 @@ def gen_art(num_frames=50, max_volume=40000, complexity=7, x_size=350, y_size=35
         im.save('frame%d.png' % t)
 
 def roundint(val, max_volume, num_frames):
+    """ Takes in current volume level, and given the max volume level
+    and the total number of frames, returns the closest volume level 
+    that corresponds to an existent frame"""
+
     return int((max_volume/num_frames) * round(float(val)/(max_volume/num_frames)))
 
 
@@ -165,7 +169,7 @@ if __name__ == '__main__':
     doctest.testmod()
 
     num_frames = 100
-    max_volume = 15000
+    max_volume = 30000
 
     bool_gen_art = raw_input("Do you need to generate new frames? Y or N: ")
     if bool_gen_art.upper() == "Y":
@@ -191,18 +195,15 @@ if __name__ == '__main__':
     inp.setrate(16000)
     inp.setformat(alsaaudio.PCM_FORMAT_S16_LE)
     inp.setperiodsize(160)
-    time.sleep(1)
+    time.sleep(.5)
             
     while True:
         l,data = inp.read()
         if l:
             # print roundint(audioop.rms(data,2), max_volume, num_frames)/(max_volume/num_frames)
-            # print 'frame%d.png' % ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames))
+            print 'frame%d.png' % ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames))
             index = ((roundint(audioop.rms(data,2), max_volume, num_frames))/(max_volume/num_frames))
             if index > num_frames-1:
                 index = num_frames-1
             screen.blit(imgs[index],(0,0))
             pygame.display.flip()
-
-
-

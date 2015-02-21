@@ -141,9 +141,11 @@ def test_image(filename, x_size=350, y_size=350):
 
 
 def gen_art(complexity=7, num_frames=1, x_size=350, y_size=350):
-    """ Generate computational art and save as an image file.
+    """ Generates computational art and save as an image file.
+        **All args optional**
 
-        filename: string filename for image (should be .png)
+        complexity - base complexity (depth of recursion) for image creation
+        num_frames - determines how many frames will be drawn
         x_size, y_size: optional args to set image dimensions (default: 350)
     """
     # Functions for red, green, and blue channels - where the magic happens!
@@ -169,16 +171,16 @@ def gen_art(complexity=7, num_frames=1, x_size=350, y_size=350):
                         c_map(eval_func(green_function, x, y, t_val)),
                         c_map(eval_func(blue_function, x, y, t_val))
                         )
-
+    
         im.save('frame%d.png' % t)
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+    # import doctest
+    # doctest.testmod()
 
-    # complexity = input("Of what complexity do you desire your art to be? ")
-    # num_frames = input("How many frames do you desire? ")
-    gen_art(7, 1)
+    complexity = input("Of what complexity do you desire your art to be? ")
+    num_frames = input("How many frames do you desire? ")
+    gen_art(complexity, num_frames)
 
     # Command to create movie from png in terminal:a
     # avconv -i "frame%d.png" -r 25 -c:v libx264 -crf 20  -pix_fmt yuv420p img.mov
